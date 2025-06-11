@@ -1,0 +1,14 @@
+[project]
+name = "tsdgenerator"
+version = "1.0.0"
+description = "A project for generating type script declaration files for an npm package."
+authors = [
+    {name = "Leonardo Mieschendahl", email = "miesschendahl.leonardo@gmail.com"}
+]
+dependencies = [
+    'JSGenerator @ git+https://github.com/Mieschendahl/JSGenerator.git'
+]
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"

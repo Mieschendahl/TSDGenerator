@@ -1,0 +1,13 @@
+__pycache__/
+__tsdgenerator__/
+__promptgpt__/
+output/
+dist/
+build/
+.venv
+
+tmp.*
+*.swp
+*.egg-info
+logs.txt
+__implementation__
