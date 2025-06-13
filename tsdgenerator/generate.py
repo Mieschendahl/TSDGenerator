@@ -55,33 +55,39 @@ def generate_types(package_name: str, extract: bool = True, generate: bool = Tru
     build_dts(work_path)
     
     print("RUNNING DTS")
-    template_path = work_path / "template"
-    project_path = work_path / "project"
+    template_path = work_path / "playground_template"
+    playground_path = work_path / "playground"
 
     create_dir(template_path)
     run_shell(f"npm install {package_name}", cwd=template_path)
     
-    jsgenerator_path = work_path / "__jsgenerator__"
-    generate_examples(package_name, extract=extract, generate=generate, fix=fix, work_path=jsgenerator_path, model_name=model_name, log_file=log_file, allow_injections=allow_injections, no_const=True)
+    jsgenerator_path = work_path / "jsgenerator"
+    generate_examples(package_name, extract=extract, generate=generate, fix=fix, work_path=jsgenerator_path, model_name=model_name, log_file=log_file, allow_injections=allow_injections, only_var=True)
 
     examples_path = jsgenerator_path / "examples" / package_name
+    if not examples_path.is_dir():
+        return None
+    
     declarations_path = work_path / "declarations" / package_name
     create_dir(declarations_path)
     for example_path in examples_path.iterdir():
-        create_dir(project_path, template_path)
-        file_path = project_path / "index.js"
-        file_path.write_text(example_path.read_text())
+        try:
+            create_dir(playground_path, template_path)
+            file_path = playground_path / "index.js"
+            file_path.write_text(example_path.read_text())
 
-        script_path = scripts_path / ("getRunTimeInformation.linux.sh" if platform.system() == "Linux" else "getRunTimeInformation.sh")
-        run_time_path = work_path / "run_time_info_ouput" / "run_time_info.json"
-        create_dir(run_time_path.parent)
-        run_shell(f"{script_path} {file_path} {run_time_path} 120")
+            script_path = scripts_path / ("getRunTimeInformation.linux.sh" if platform.system() == "Linux" else "getRunTimeInformation.sh")
+            run_time_path = work_path / "run_time_info_ouput" / "run_time_info.json"
+            create_dir(run_time_path.parent)
+            run_shell(f"{script_path} {file_path} {run_time_path} 120")
 
-        tsd_path = work_path / "tsd_output"
-        create_dir(tsd_path)
-        script_path = scripts_path / "generateDeclarationFile.sh"
-        run_shell(f"{script_path} {run_time_path} {package_name} {tsd_path}")
+            tsd_path = work_path / "tsd_output"
+            create_dir(tsd_path)
+            script_path = scripts_path / "generateDeclarationFile.sh"
+            run_shell(f"{script_path} {run_time_path} {package_name} {tsd_path}")
 
-        file_path = declarations_path / example_path.name.replace(".js", ".d.ts")
-        output_path = tsd_path / package_name / "index.d.ts"
-        file_path.write_text(output_path.read_text())
+            file_path = declarations_path / example_path.name.replace(".js", ".d.ts")
+            output_path = tsd_path / package_name / "index.d.ts"
+            file_path.write_text(output_path.read_text())
+        except Exception as e:
+            print(f"Catched an Exception: {e}")
